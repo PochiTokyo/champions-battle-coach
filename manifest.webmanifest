@@ -1,0 +1,13 @@
+{
+  "name": "Champions Battle Coach",
+  "short_name": "Battle Coach",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#08101f",
+  "theme_color": "#0b1020",
+  "description": "Pokémon Champions の選出・対戦判断を補助する個人用Webアプリ",
+  "icons": [
+    {"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
+}
