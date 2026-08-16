@@ -1,11 +1,12 @@
-# Champions Battle Coach
+# Champions Battle Coach v0.3.2
 
-スマホ向けの Pokémon Champions 対戦コーチ Web アプリです。
+Pokémon Champions向けの個人用対戦コーチWebアプリ。
 
-- 相手6体から推奨選出を提案
-- 対戦中の盤面から技・交代候補を提示
-- スカウト候補の簡易分析
-- iPhone/Safari向けモバイルUI
-- PWA対応
+## 主な機能
+- 相手パーティを選んで推奨選出を計算
+- バトル中のHP・場の状態から技/交代候補を表示
+- スクリーンショット添付 + OCR（ネット接続時）
+- チーム編集、スカウト分析、履歴保存
+- iPhone/Safari向けUI、PWA対応
 
-GitHub Pagesで公開して使うことを前提にしています。
+GitHub Pagesで公開してSafariから利用することを想定しています。
