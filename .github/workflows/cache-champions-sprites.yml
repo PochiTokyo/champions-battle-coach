@@ -1,0 +1,87 @@
+name: Cache Champions menu sprites
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/cache-champions-sprites.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  cache-sprites:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Pokemon Champions menu sprites
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, os, urllib.parse, urllib.request, time
+
+          API = 'https://archives.bulbagarden.net/w/api.php'
+          OUT = 'sprites'
+          os.makedirs(OUT, exist_ok=True)
+
+          params = {
+              'action': 'query',
+              'format': 'json',
+              'generator': 'categorymembers',
+              'gcmtitle': 'Category:Champions menu sprites',
+              'gcmtype': 'file',
+              'gcmlimit': '500',
+              'prop': 'imageinfo',
+              'iiprop': 'url',
+          }
+
+          files = {}
+          cont = {}
+          while True:
+              q = params | cont
+              url = API + '?' + urllib.parse.urlencode(q)
+              req = urllib.request.Request(url, headers={'User-Agent':'champions-battle-coach/0.4.1'})
+              with urllib.request.urlopen(req, timeout=60) as r:
+                  data = json.load(r)
+              for p in (data.get('query', {}).get('pages', {}) or {}).values():
+                  title = p.get('title','')
+                  ii = (p.get('imageinfo') or [{}])[0]
+                  src = ii.get('url')
+                  if title.startswith('File:') and src:
+                      files[title[5:]] = src
+              if 'continue' not in data:
+                  break
+              cont = data['continue']
+
+          print('Found', len(files), 'sprites')
+          ok = []
+          for i, (name, src) in enumerate(sorted(files.items()), 1):
+              dst = os.path.join(OUT, name)
+              if not os.path.exists(dst) or os.path.getsize(dst) < 100:
+                  req = urllib.request.Request(src, headers={'User-Agent':'champions-battle-coach/0.4.1'})
+                  with urllib.request.urlopen(req, timeout=60) as r, open(dst, 'wb') as f:
+                      f.write(r.read())
+                  time.sleep(0.03)
+              ok.append(name)
+              if i % 50 == 0:
+                  print(i, '/', len(files))
+
+          with open(os.path.join(OUT, 'index.json'), 'w', encoding='utf-8') as f:
+              json.dump({'version':1,'files':ok}, f, ensure_ascii=False, separators=(',',':'))
+          print('Cached', len(ok), 'sprites')
+          PY
+
+      - name: Commit cached sprites
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add sprites
+          if git diff --cached --quiet; then
+            echo 'No sprite changes'
+          else
+            git commit -m 'Cache Pokemon Champions menu sprites'
+            git push
+          fi
